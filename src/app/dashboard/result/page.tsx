@@ -1,7 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,22 +8,22 @@ import { Copy, ArrowLeft, Download, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 function ResultContent() {
-  const searchParams = useSearchParams();
-  const dataString = searchParams.get('data');
-  
-  let data = {
+  const [data, setData] = useState({
     headline: '',
     description: '',
     features: [] as string[]
-  };
+  });
 
-  try {
-    if (dataString) {
-      data = JSON.parse(decodeURIComponent(dataString));
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('generatedListing');
+    if (storedData) {
+      try {
+        setData(JSON.parse(storedData));
+      } catch (e) {
+        console.error('Failed to parse result data', e);
+      }
     }
-  } catch (e) {
-    console.error('Failed to parse result data', e);
-  }
+  }, []);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

@@ -70,7 +70,8 @@ export default function DashboardPage() {
       }
 
       const data = await response.json();
-      router.push(`/dashboard/result?data=${encodeURIComponent(JSON.stringify(data))}`);
+      sessionStorage.setItem('generatedListing', JSON.stringify(data));
+      router.push('/dashboard/result');
     } catch (err) {
       console.error('Error generating listing:', err);
       setError(err instanceof Error ? err : new Error('An unexpected error occurred'));

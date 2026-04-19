@@ -37,7 +37,7 @@ function ResultContent() {
           <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary flex items-center mb-2">
             <ArrowLeft className="mr-1 h-4 w-4" /> Back to Generator
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">Your Generated Listing</h1>
+          <h1 className="text-3xl font-heading font-bold tracking-tight">Your Generated Listing</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
@@ -52,7 +52,7 @@ function ResultContent() {
       <div className="grid gap-6">
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-semibold">Headline</CardTitle>
+            <CardTitle className="text-lg font-heading font-semibold">Headline</CardTitle>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -69,7 +69,7 @@ function ResultContent() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-semibold">Description</CardTitle>
+            <CardTitle className="text-lg font-heading font-semibold">Description</CardTitle>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -89,7 +89,7 @@ function ResultContent() {
         {data.features && data.features.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">Key Features</CardTitle>
+              <CardTitle className="text-lg font-heading font-semibold">Key Features</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">

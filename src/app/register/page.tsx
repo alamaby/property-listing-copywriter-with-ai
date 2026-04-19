@@ -25,11 +25,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full px-4 sm:w-[400px]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Register</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-heading font-bold">Register</CardTitle>
+          <CardDescription className="leading-relaxed">
             Create an account to start generating property listings
           </CardDescription>
         </CardHeader>
@@ -50,7 +50,7 @@ export default function RegisterPage() {
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Register'}
+              {loading ? 'Creating account...' : 'Sign up'}
             </Button>
             <div className="text-center text-sm text-gray-500">
               Already have an account?{' '}

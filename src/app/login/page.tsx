@@ -22,11 +22,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen items-center justify-center bg-[#FFFBF1]">
       <Card className="w-full px-4 sm:w-[400px]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-heading font-bold">Login</CardTitle>
+          <CardDescription className="leading-relaxed">
             Enter your email and password to access your dashboard
           </CardDescription>
         </CardHeader>
@@ -42,12 +42,12 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+            <Button type="submit" className="w-full bg-[#E36A6A] hover:bg-[#CC5555] text-white" disabled={loading}>
+              {loading ? 'Logging in...' : 'Log in'}
             </Button>
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-[#6B5D54]">
               Don't have an account?{' '}
-              <Link href="/register" className="text-primary hover:underline">
+              <Link href="/register" className="text-[#E36A6A] hover:text-[#CC5555] hover:underline">
                 Register
               </Link>
             </div>

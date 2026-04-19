@@ -20,6 +20,32 @@ export async function POST(req: Request) {
     prompt = body.prompt;
     propertyContext = body.propertyContext;
     
+    // Validate and sanitize inputs
+    if (!prompt || typeof prompt !== 'string') {
+      return new Response('Invalid prompt provided', { status: 400 });
+    }
+    
+    if (!propertyContext || typeof propertyContext !== 'object') {
+      return new Response('Invalid property context provided', { status: 400 });
+    }
+    
+    // Validate additionalPoints character limit
+    if (propertyContext.additionalPoints && propertyContext.additionalPoints.length > 200) {
+      return new Response('Additional selling points must be 200 characters or less', { status: 400 });
+    }
+    
+    // Sanitize property context values
+    const sanitizedPropertyContext = {
+      propertyType: String(propertyContext.propertyType || '').replace(/[<>"'&]/g, ''),
+      transactionType: String(propertyContext.transactionType || '').replace(/[<>"'&]/g, ''),
+      landArea: String(propertyContext.landArea || '').replace(/[<>"'&]/g, ''),
+      buildingArea: String(propertyContext.buildingArea || '').replace(/[<>"'&]/g, ''),
+      bedrooms: String(propertyContext.bedrooms || '').replace(/[<>"'&]/g, ''),
+      bathrooms: String(propertyContext.bathrooms || '').replace(/[<>"'&]/g, ''),
+      location: String(propertyContext.location || '').replace(/[<>"'&]/g, ''),
+      additionalPoints: String(propertyContext.additionalPoints || '').replace(/[<>"'&]/g, '').substring(0, 200),
+    };
+    
     const supabase = await createClient();
     const serviceRoleSupabase = createServiceRoleClient();
 
@@ -69,7 +95,7 @@ export async function POST(req: Request) {
       // Log LLM error
       await serviceRoleSupabase.from('llm_logs').insert({
         user_id: userId,
-        property_context: propertyContext,
+        property_context: sanitizedPropertyContext,
         model_used: process.env.OPENROUTER_MODEL || 'anthropic/claude-3-haiku',
         request_payload: { prompt },
         response_payload: { error: llmError.message },
@@ -95,7 +121,7 @@ export async function POST(req: Request) {
     // 4. Log to LLM Logs (using service role to bypass RLS)
     const { error: logError } = await serviceRoleSupabase.from('llm_logs').insert({
       user_id: user.id,
-      property_context: propertyContext,
+      property_context: sanitizedPropertyContext,
       model_used: process.env.OPENROUTER_MODEL || 'anthropic/claude-3-haiku',
       request_payload: { prompt },
       response_payload: { text: result.text },

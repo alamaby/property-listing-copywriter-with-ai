@@ -55,10 +55,10 @@ export default async function DashboardLayout({
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50/50">
+    <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 border-r bg-white md:block">
-        <div className="flex h-16 items-center border-b px-6 font-semibold">
+      <aside className="hidden w-64 border-r bg-card md:block">
+        <div className="flex h-16 items-center border-b px-6 font-heading font-semibold text-lg">
           AI Property Copy
         </div>
         <div className="p-4 h-[calc(100vh-64px)]">
@@ -68,7 +68,7 @@ export default async function DashboardLayout({
 
       <div className="flex flex-1 flex-col">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-white px-4 md:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
           <div className="flex items-center gap-4">
             {/* Mobile Nav Toggle */}
             <div className="md:hidden">
@@ -79,7 +79,7 @@ export default async function DashboardLayout({
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 p-4">
-                  <div className="mb-8 font-semibold text-lg">AI Property Copy</div>
+                  <div className="mb-8 font-heading font-semibold text-lg">AI Property Copy</div>
                   <SidebarContent />
                 </SheetContent>
               </Sheet>
@@ -88,9 +88,11 @@ export default async function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="px-3 py-1 text-sm font-medium bg-blue-50 text-blue-700 border-blue-100">
-              Credits: {credits}
-            </Badge>
+            <Link href="/dashboard/history">
+              <Badge variant="secondary" className="px-3 py-1 text-sm font-medium cursor-pointer hover:bg-secondary/80">
+                Credits: {credits}
+              </Badge>
+            </Link>
           </div>
         </header>
 

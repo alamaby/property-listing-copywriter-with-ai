@@ -27,7 +27,19 @@ export default function DashboardPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Sanitize input by removing potentially dangerous characters
+    let sanitizedValue = value;
+    
+    if (name === 'additionalPoints') {
+      // For selling points, limit to 200 characters and sanitize
+      sanitizedValue = value.replace(/[<>"'&]/g, '').substring(0, 200);
+    } else {
+      // For other inputs, just sanitize
+      sanitizedValue = value.replace(/[<>"'&]/g, '');
+    }
+    
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -63,10 +75,10 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         if (response.status === 402) {
-          throw new Error('Insufficient credits. Please purchase more credits to continue.');
+          throw new Error('Credit tidak cukup. Silakan beli lebih banyak kredit untuk melanjutkan.');
         }
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to generate listing');
+        throw new Error(errorText || 'Gagal menghasilkan listing');
       }
 
       const data = await response.json();
@@ -81,10 +93,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 bg-[#FFFBF1] p-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">AI Listing Generator</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-heading font-bold tracking-tight">AI Listing Generator</h1>
+        <p className="text-[#6B5D54] leading-relaxed">
           Fill in the details below to generate a professional property listing.
         </p>
       </div>
@@ -93,7 +105,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Property Details</CardTitle>
-            <CardDescription>Provide the core characteristics of the property.</CardDescription>
+            <CardDescription className="text-[#6B5D54]">Provide the core characteristics of the property.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-6">
@@ -205,10 +217,16 @@ export default function DashboardPage() {
                   className="min-h-[120px]"
                   value={formData.additionalPoints}
                   onChange={handleInputChange}
+                  maxLength={200}
                 />
+                {formData.additionalPoints.length > 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    {formData.additionalPoints.length}/200 characters
+                  </div>
+                )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-[#E36A6A] hover:bg-[#CC5555] text-white" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

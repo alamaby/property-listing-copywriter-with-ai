@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [formStartTime] = useState(() => Math.floor(Date.now() / 1000));
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -41,6 +42,8 @@ export default function LoginPage() {
               <Input id="password" name="password" type="password" required />
             </div>
           </CardContent>
+          <input type="hidden" name="form-start-time" value={formStartTime} />
+          <input type="text" name="bot-field" className="hidden" autoComplete="off" />
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full bg-[#E36A6A] hover:bg-[#CC5555] text-white" disabled={loading}>
               {loading ? 'Logging in...' : 'Log in'}

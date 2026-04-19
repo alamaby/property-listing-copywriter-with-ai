@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signUp } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const refParam = searchParams.get('ref');
+  const [formStartTime] = useState(() => Math.floor(Date.now() / 1000));
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -56,6 +57,8 @@ export default function RegisterPage() {
               <Input id="password" name="password" type="password" required />
             </div>
           </CardContent>
+          <input type="hidden" name="form-start-time" value={formStartTime} />
+          <input type="text" name="bot-field" className="hidden" autoComplete="off" />
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating account...' : 'Sign up'}

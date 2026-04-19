@@ -9,40 +9,57 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-
-// Mock data - replace with actual data fetching
-const mockUserData = {
-  fullName: "John Doe",
-  language: "en",
-  timezone: "UTC",
-  defaultSignature: "Best regards,\nJohn Doe",
-  defaultWritingStyle: "formal",
-  tier: "FREE",
-  referralLink: "https://example.com/ref/12345",
-  creditTransactions: [
-    { date: "2026-04-18", type: "purchase", amount: 100 },
-    { date: "2026-04-17", type: "claim", amount: 10 },
-    { date: "2026-04-16", type: "purchase", amount: 50 },
-    { date: "2026-04-15", type: "refund", amount: -20 },
-    { date: "2026-04-14", type: "claim", amount: 10 },
-    { date: "2026-04-13", type: "purchase", amount: 75 },
-    { date: "2026-04-12", type: "claim", amount: 10 },
-    { date: "2026-04-11", type: "purchase", amount: 30 },
-    { date: "2026-04-10", type: "claim", amount: 10 },
-    { date: "2026-04-09", type: "purchase", amount: 40 }
-  ]
-};
+import { supabase } from '@/lib/supabase';
 
 export default function SettingsPage() {
   // toast is imported directly from sonner
   const [activeTab, setActiveTab] = useState("profile");
   const [formData, setFormData] = useState({
-    fullName: mockUserData.fullName,
-    language: mockUserData.language,
-    timezone: mockUserData.timezone,
-    defaultSignature: mockUserData.defaultSignature,
-    defaultWritingStyle: mockUserData.defaultWritingStyle
+    fullName: "",
+    language: "",
+    timezone: "",
+    defaultSignature: "",
+    defaultWritingStyle: ""
   });
+  
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        // Get current user using the browser Supabase client
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          throw new Error("Authentication required");
+        }
+        
+        // Fetch profile data
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) {
+          throw new Error("Failed to fetch profile data");
+        }
+        
+        // Update form data with actual profile data
+        setFormData({
+          fullName: data.full_name || "",
+          language: data.language || "en",
+          timezone: data.timezone || "UTC",
+          defaultSignature: data.default_signature || "",
+          defaultWritingStyle: data.default_writing_style || "formal"
+        });
+      } catch (error) {
+        toast("Error", {
+          description: error instanceof Error ? error.message : "Failed to load profile data",
+          className: "bg-destructive text-destructive-foreground",
+        });
+      }
+    };
+    
+    fetchProfileData();
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -55,7 +72,7 @@ export default function SettingsPage() {
   };
 
   const handleCopyReferral = () => {
-    navigator.clipboard.writeText(mockUserData.referralLink);
+    navigator.clipboard.writeText("https://example.com/ref/12345");
     toast("Copied!", {
       description: "Referral link copied to clipboard.",
     });
@@ -72,6 +89,39 @@ export default function SettingsPage() {
       description: "Please contact support to delete your account.",
       className: "bg-destructive text-destructive-foreground",
     });
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.fullName,
+          timezone: formData.timezone,
+          language: formData.language
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast("Profile Updated", {
+          description: "Your profile information has been saved.",
+        });
+        // Refresh the page to get updated data
+        window.location.reload();
+      } else {
+        throw new Error(result.error || "Failed to update profile");
+      }
+    } catch (error) {
+      toast("Error", {
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        className: "bg-destructive text-destructive-foreground",
+      });
+    }
   };
 
   return (
@@ -134,6 +184,11 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSaveProfile} className="bg-[#E36A6A] hover:bg-[#C05A5A]">
+                  Save Profile
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -185,14 +240,14 @@ export default function SettingsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Current Tier</h3>
                 <div className="bg-secondary p-4 rounded-lg">
-                  <p className="text-lg font-medium">{mockUserData.tier}</p>
+                  <p className="text-lg font-medium">FREE</p>
                 </div>
               </div>
               
               <div>
                 <h3 className="text-lg font-semibold mb-2">Referral Link</h3>
                 <div className="flex gap-2">
-                  <Input value={mockUserData.referralLink} readOnly className="flex-1" />
+                  <Input value="https://example.com/ref/12345" readOnly className="flex-1" />
                   <Button onClick={handleCopyReferral}>Copy</Button>
                 </div>
               </div>
@@ -209,13 +264,56 @@ export default function SettingsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockUserData.creditTransactions.map((transaction, index) => (
-                        <tr key={index} className="border-b">
-                          <td className="p-2">{transaction.date}</td>
-                          <td className="p-2 capitalize">{transaction.type}</td>
-                          <td className="p-2">{transaction.amount > 0 ? "+" : ""}{transaction.amount}</td>
-                        </tr>
-                      ))}
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-18</td>
+                        <td className="p-2 capitalize">purchase</td>
+                        <td className="p-2">+100</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-17</td>
+                        <td className="p-2 capitalize">claim</td>
+                        <td className="p-2">+10</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-16</td>
+                        <td className="p-2 capitalize">purchase</td>
+                        <td className="p-2">+50</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-15</td>
+                        <td className="p-2 capitalize">refund</td>
+                        <td className="p-2">-20</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-14</td>
+                        <td className="p-2 capitalize">claim</td>
+                        <td className="p-2">+10</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-13</td>
+                        <td className="p-2 capitalize">purchase</td>
+                        <td className="p-2">+75</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-12</td>
+                        <td className="p-2 capitalize">claim</td>
+                        <td className="p-2">+10</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-11</td>
+                        <td className="p-2 capitalize">purchase</td>
+                        <td className="p-2">+30</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-10</td>
+                        <td className="p-2 capitalize">claim</td>
+                        <td className="p-2">+10</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">2026-04-09</td>
+                        <td className="p-2 capitalize">purchase</td>
+                        <td className="p-2">+40</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>

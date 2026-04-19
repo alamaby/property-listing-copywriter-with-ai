@@ -22,7 +22,7 @@ export async function signIn(formData: FormData) {
   redirect('/dashboard');
 }
 
-export async function signUp(formData: FormData) {
+export async function signUp(formData: FormData, referredBy?: string) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const fullName = formData.get('fullName') as string;
@@ -34,6 +34,7 @@ export async function signUp(formData: FormData) {
     options: {
       data: {
         full_name: fullName,
+        ...(referredBy && { referred_by: referredBy }),
       },
     },
   });
@@ -51,4 +52,23 @@ export async function signOut() {
   await supabase.auth.signOut();
   revalidatePath('/', 'layout');
   redirect('/login');
+}
+
+/**
+ * Triggers a password reset email to be sent to the user's email address
+ * @param email The email address to send the reset email to
+ * @returns Object with success status and potential error message
+ */
+export async function resetPassword(email: string) {
+  const supabase = await createClient();
+  
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
 }

@@ -4,6 +4,9 @@ import { getUserStats, getRecentGenerations } from '@/services/dashboardService'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { creditService } from '@/services/creditService';
+import { DailyClaimButton } from '@/components/DailyClaimButton';
+import { Toaster } from 'sonner';
+import { ReferralCard } from '@/components/ReferralCard';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -16,6 +19,7 @@ export default async function DashboardPage() {
   const creditBalance = await creditService.getUserCreditBalance(user.id);
   const stats = await getUserStats(user.id);
   const recentGenerations = await getRecentGenerations(user.id);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   return (
     <div className="space-y-8 p-4 md:p-6">
@@ -24,15 +28,23 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">Here's your account overview and recent activity.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available Credits</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{creditBalance}</div>
-          </CardContent>
-        </Card>
+       <div className="grid gap-4 md:grid-cols-3">
+         <Card>
+           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+             <CardTitle className="text-sm font-medium">Available Credits</CardTitle>
+           </CardHeader>
+           <CardContent>
+             <div className="text-2xl font-bold">{creditBalance}</div>
+           </CardContent>
+         </Card>
+         <Card>
+           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+             <CardTitle className="text-sm font-medium">Daily Bonus</CardTitle>
+           </CardHeader>
+           <CardContent>
+             <DailyClaimButton hasClaimed={!!stats.hasClaimedToday} />
+           </CardContent>
+         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Properties Generated</CardTitle>
@@ -41,16 +53,17 @@ export default async function DashboardPage() {
             <div className="text-2xl font-bold">{stats.totalGenerations}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.recentActivity}</div>
-            <p className="text-xs text-muted-foreground">Active this week</p>
-          </CardContent>
-        </Card>
-      </div>
+         <Card>
+           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+             <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+           </CardHeader>
+           <CardContent>
+             <div className="text-2xl font-bold">{stats.recentActivity}</div>
+             <p className="text-xs text-muted-foreground">Active this week</p>
+           </CardContent>
+         </Card>
+         <ReferralCard userId={user.id} />
+       </div>
 
       <Card>
         <CardHeader>

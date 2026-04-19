@@ -8,13 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const refParam = searchParams.get('ref');
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
-    const result = await signUp(formData);
+    const result = await signUp(formData, refParam ?? undefined);
     if (result?.error) {
       toast.error(result.error);
       setLoading(false);
@@ -29,9 +32,14 @@ export default function RegisterPage() {
       <Card className="w-full px-4 sm:w-[400px]">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-heading font-bold">Register</CardTitle>
-          <CardDescription className="leading-relaxed">
-            Create an account to start generating property listings
-          </CardDescription>
+           <CardDescription className="leading-relaxed">
+             Create an account to start generating property listings
+           </CardDescription>
+           {refParam && (
+             <p className="text-sm text-muted-foreground mt-2">
+               You were referred! You'll get bonus credits upon signup.
+             </p>
+           )}
         </CardHeader>
         <form action={handleSubmit}>
           <CardContent className="space-y-4">

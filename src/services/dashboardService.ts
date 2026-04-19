@@ -1,6 +1,13 @@
 import { createClient } from '@/utils/supabase/server';
 
+// Create supabase client instance
 const supabase = await createClient();
+
+// Helper function to get start of today in UTC
+function getStartOfToday() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
 
 export async function getUserStats(userId: string) {
   // Get total generations count
@@ -11,8 +18,20 @@ export async function getUserStats(userId: string) {
 
   if (countError) {
     console.error('Error fetching generation count:', countError);
-    return { totalGenerations: 0, totalCreditsUsed: 0, recentActivity: 0 };
+    return { totalGenerations: 0, totalCreditsUsed: 0, recentActivity: 0, hasClaimedToday: false };
   }
+
+  // Check if user has claimed daily credit today
+  const startOfToday = getStartOfToday();
+  const { data: dailyClaim, error: claimError } = await supabase
+    .from('credit_transactions')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('transaction_type', 'DAILY_CLAIM')
+    .gte('created_at', startOfToday.toISOString())
+    .single();
+
+  const hasClaimedToday = !claimError && dailyClaim !== null;
 
   // Get total credits used this month
   const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
@@ -25,7 +44,7 @@ export async function getUserStats(userId: string) {
 
   if (monthlyError) {
     console.error('Error fetching monthly credits:', monthlyError);
-    return { totalGenerations: totalGenerations || 0, totalCreditsUsed: 0, recentActivity: 0 };
+    return { totalGenerations: totalGenerations || 0, totalCreditsUsed: 0, recentActivity: 0, hasClaimedToday };
   }
 
   const totalCreditsUsed = monthlyLogs?.reduce((sum, log) => sum + log.credits_used, 0) || 0;
@@ -43,7 +62,7 @@ export async function getUserStats(userId: string) {
 
   if (recentError) {
     console.error('Error fetching recent activity:', recentError);
-    return { totalGenerations: totalGenerations || 0, totalCreditsUsed, recentActivity: 0 };
+    return { totalGenerations: totalGenerations || 0, totalCreditsUsed, recentActivity: 0, hasClaimedToday };
   }
 
   // Extract unique dates from recent logs
@@ -55,7 +74,8 @@ export async function getUserStats(userId: string) {
   return {
     totalGenerations: totalGenerations || 0,
     totalCreditsUsed,
-    recentActivity
+    recentActivity,
+    hasClaimedToday
   };
 }
 

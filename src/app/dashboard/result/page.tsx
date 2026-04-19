@@ -30,6 +30,40 @@ function ResultContent() {
     // You could add a toast here
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Property Listing',
+      text: `${data.headline}\n\n${data.description}\n\n${data.features.map(f => `• ${f}`).join('\n')}`,
+    };
+    
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // Share was cancelled or failed
+        console.log('Share cancelled or failed:', err);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      const textToCopy = `${data.headline}\n\n${data.description}\n\nFeatures:\n${data.features.map(f => `• ${f}`).join('\n')}`;
+      await navigator.clipboard.writeText(textToCopy);
+      // You could add a toast here to indicate success
+    }
+  };
+
+  const handleDownload = () => {
+    const content = `PROPERTY LISTING\n\n${data.headline}\n\n${data.description}\n\nKEY FEATURES\n${data.features.map(f => `• ${f}`).join('\n')}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `property-listing-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
@@ -40,10 +74,10 @@ function ResultContent() {
           <h1 className="text-3xl font-heading font-bold tracking-tight">Your Generated Listing</h1>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="mr-2 h-4 w-4" /> Share
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="mr-2 h-4 w-4" /> Download
           </Button>
         </div>

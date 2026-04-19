@@ -1,14 +1,10 @@
 import { createOpenAI } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 import { createServiceRoleClient } from '@/utils/supabase/service-role';
 
 export const runtime = 'edge';
-
-const openrouter = createOpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
 
 export async function POST(req: Request) {
   let userId: string | null = null;
@@ -74,9 +70,24 @@ export async function POST(req: Request) {
 
     // 2. Generate text
     let result;
+    const activeProvider = process.env.ACTIVE_AI_PROVIDER || 'openrouter';
+    const openRouterModelName = process.env.OPENROUTER_MODEL || 'anthropic/claude-3-haiku';
+    const geminiModelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    
+    // Initialize the appropriate model based on active provider
+    const model = activeProvider === 'gemini' 
+      ? google(geminiModelName)
+      : createOpenAI({
+          baseURL: 'https://openrouter.ai/api/v1',
+          apiKey: process.env.OPENROUTER_API_KEY,
+        })(openRouterModelName);
+
+    // Store the actual model used for logging
+    const actualModelUsed = activeProvider === 'gemini' ? geminiModelName : openRouterModelName;
+    
     try {
       result = await generateText({
-        model: openrouter(process.env.OPENROUTER_MODEL || 'anthropic/claude-3-haiku'),
+        model,
         system: `You are an expert real estate copywriter. Your goal is to create high-converting property listings based on the provided details. 
         Use persuasive language, highlight key selling points, and structure the output with a compelling headline followed by a well-organized body text.
         Target potential buyers or renters by emphasizing the lifestyle and benefits of the property.
@@ -96,7 +107,7 @@ export async function POST(req: Request) {
       await serviceRoleSupabase.from('llm_logs').insert({
         user_id: userId,
         property_context: sanitizedPropertyContext,
-        model_used: process.env.OPENROUTER_MODEL || 'anthropic/claude-3-haiku',
+        model_used: actualModelUsed,
         request_payload: { prompt },
         response_payload: { error: llmError.message },
         prompt_tokens: 0,
@@ -122,7 +133,7 @@ export async function POST(req: Request) {
     const { error: logError } = await serviceRoleSupabase.from('llm_logs').insert({
       user_id: user.id,
       property_context: sanitizedPropertyContext,
-      model_used: process.env.OPENROUTER_MODEL || 'anthropic/claude-3-haiku',
+      model_used: actualModelUsed,
       request_payload: { prompt },
       response_payload: { text: result.text },
       prompt_tokens: (result.usage as any)?.promptTokens || 0,

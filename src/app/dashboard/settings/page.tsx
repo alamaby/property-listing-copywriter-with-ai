@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { supabase } from '@/lib/supabase';
+import { getProfileData } from "./actions";
 
 export default function SettingsPage() {
   // toast is imported directly from sonner
@@ -23,33 +23,14 @@ export default function SettingsPage() {
   });
   
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const loadProfileData = async () => {
       try {
-        // Get current user using the browser Supabase client
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          throw new Error("Authentication required");
+        const profileData = await getProfileData();
+        if (profileData) {
+          setFormData(profileData);
+        } else {
+          throw new Error("Failed to load profile data");
         }
-        
-        // Fetch profile data
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-          
-        if (error) {
-          throw new Error("Failed to fetch profile data");
-        }
-        
-        // Update form data with actual profile data
-        setFormData({
-          fullName: data.full_name || "",
-          language: data.language || "en",
-          timezone: data.timezone || "UTC",
-          defaultSignature: data.default_signature || "",
-          defaultWritingStyle: data.default_writing_style || "formal"
-        });
       } catch (error) {
         toast("Error", {
           description: error instanceof Error ? error.message : "Failed to load profile data",
@@ -58,7 +39,7 @@ export default function SettingsPage() {
       }
     };
     
-    fetchProfileData();
+    loadProfileData();
   }, []);
 
   const handleInputChange = (field: string, value: string) => {

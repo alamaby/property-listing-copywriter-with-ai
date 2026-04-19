@@ -3,6 +3,7 @@ import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 import { createServiceRoleClient } from '@/utils/supabase/service-role';
+import { getProfileData } from '@/app/dashboard/settings/actions';
 
 export const runtime = 'edge';
 
@@ -55,6 +56,11 @@ export async function POST(req: Request) {
     
     userId = user.id;
 
+    // Get user's default signature and writing style
+    const profileData = await getProfileData();
+    const defaultSignature = profileData?.defaultSignature || '';
+    const defaultWritingStyle = profileData?.defaultWritingStyle || 'formal';
+
     // 1. Check Credits
     const { data: transactions, error: balanceError } = await supabase
       .from('credit_transactions')
@@ -85,12 +91,18 @@ export async function POST(req: Request) {
     // Store the actual model used for logging
     const actualModelUsed = activeProvider === 'gemini' ? geminiModelName : openRouterModelName;
     
-    try {
-      result = await generateText({
-        model,
-        system: `You are an expert real estate copywriter. Your goal is to create high-converting property listings based on the provided details. 
+    // Create system message with user preferences
+    let systemMessage = `You are an expert real estate copywriter. Your goal is to create high-converting property listings based on the provided details. 
         Use persuasive language, highlight key selling points, and structure the output with a compelling headline followed by a well-organized body text.
         Target potential buyers or renters by emphasizing the lifestyle and benefits of the property.
+        
+        Use the user's preferred writing style: ${defaultWritingStyle}.`;
+    
+    if (defaultSignature) {
+      systemMessage += `\nInclude the following signature at the end of the description: "${defaultSignature}"`;
+    }
+    
+    systemMessage += `
         
         You MUST respond ONLY with a valid JSON object. Do not include any markdown formatting, code blocks, or preamble.
         
@@ -99,7 +111,12 @@ export async function POST(req: Request) {
           "headline": "Compelling Headline",
           "description": "Engaging body text",
           "features": ["Feature 1", "Feature 2", ...]
-        }`,
+        }`;
+
+    try {
+      result = await generateText({
+        model,
+        system: systemMessage,
         prompt: prompt,
       });
     } catch (llmError: any) {

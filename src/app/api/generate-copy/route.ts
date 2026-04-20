@@ -56,10 +56,11 @@ export async function POST(req: Request) {
     
     userId = user.id;
 
-    // Get user's default signature and writing style
+    // Get user's default signature, writing style, and language
     const profileData = await getProfileData();
     const defaultSignature = profileData?.defaultSignature || '';
     const defaultWritingStyle = profileData?.defaultWritingStyle || 'formal';
+    const language = profileData?.language || 'en';
 
     // 1. Check Credits
     const { data: transactions, error: balanceError } = await supabase
@@ -96,7 +97,8 @@ export async function POST(req: Request) {
         Use persuasive language, highlight key selling points, and structure the output with a compelling headline followed by a well-organized body text.
         Target potential buyers or renters by emphasizing the lifestyle and benefits of the property.
         
-        Use the user's preferred writing style: ${defaultWritingStyle}.`;
+        Use the user's preferred writing style: ${defaultWritingStyle}.
+        Write the response in the user's preferred language: ${language}.`;
     
     if (defaultSignature) {
       systemMessage += `\nInclude the following signature at the end of the description: "${defaultSignature}"`;

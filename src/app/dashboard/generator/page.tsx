@@ -93,10 +93,10 @@ export default function GeneratorPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 bg-[#FFFBF1] p-8">
+    <div className="max-w-4xl mx-auto space-y-8 bg-background p-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-heading font-bold tracking-tight">AI Listing Generator</h1>
-        <p className="text-[#6B5D54] leading-relaxed">
+        <p className="text-muted-foreground leading-relaxed">
           Fill in the details below to generate a professional property listing.
         </p>
       </div>
@@ -105,7 +105,7 @@ export default function GeneratorPage() {
         <Card>
           <CardHeader>
             <CardTitle>Property Details</CardTitle>
-            <CardDescription className="text-[#6B5D54]">Provide the core characteristics of the property.</CardDescription>
+            <CardDescription className="text-muted-foreground">Provide the core characteristics of the property.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-6">
@@ -226,7 +226,7 @@ export default function GeneratorPage() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full bg-[#E36A6A] hover:bg-[#CC5555] text-white" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

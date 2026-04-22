@@ -23,7 +23,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FFFBF1]">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full px-4 sm:w-[400px]">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-heading font-bold">Login</CardTitle>
@@ -45,12 +45,12 @@ export default function LoginPage() {
           <input type="hidden" name="form-start-time" value={formStartTime} />
           <input type="text" name="bot-field" className="hidden" autoComplete="off" />
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full bg-[#E36A6A] hover:bg-[#CC5555] text-white" disabled={loading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
               {loading ? 'Logging in...' : 'Log in'}
             </Button>
-            <div className="text-center text-sm text-[#6B5D54]">
+            <div className="text-center text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link href="/register" className="text-[#E36A6A] hover:text-[#CC5555] hover:underline">
+              <Link href="/register" className="text-primary hover:text-primary/80 hover:underline">
                 Register
               </Link>
             </div>

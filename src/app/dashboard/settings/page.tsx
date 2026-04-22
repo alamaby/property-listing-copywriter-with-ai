@@ -275,7 +275,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex justify-end pt-4">
-                <Button onClick={handleSaveProfile} className="bg-[#E36A6A] hover:bg-[#C05A5A]">
+                <Button onClick={handleSaveProfile} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   Save Profile
                 </Button>
               </div>
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
               <div className="flex justify-end pt-4">
-                <Button onClick={handleSaveDefaults} className="bg-[#E36A6A] hover:bg-[#C05A5A]">
+                <Button onClick={handleSaveDefaults} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   Save Defaults
                 </Button>
               </div>

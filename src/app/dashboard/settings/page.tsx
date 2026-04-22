@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { getProfileData } from "./actions";
+import { updateProfile } from "@/app/actions/profile";
 
 export default function SettingsPage() {
   // toast is imported directly from sonner
@@ -46,10 +47,22 @@ export default function SettingsPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSaveDefaults = () => {
-    toast("Defaults Saved", {
-      description: "Your default signature and writing style have been saved.",
-    });
+  const handleSaveDefaults = async () => {
+    try {
+      const result = await updateProfile({
+        defaultSignature: formData.defaultSignature,
+        defaultWritingStyle: formData.defaultWritingStyle,
+      });
+      if (result.error) throw new Error(result.error);
+      toast("Defaults Saved", {
+        description: "Your default signature and writing style have been saved.",
+      });
+    } catch (error) {
+      toast("Error", {
+        description: error instanceof Error ? error.message : "Failed to save defaults",
+        className: "bg-destructive text-destructive-foreground",
+      });
+    }
   };
 
   const handleCopyReferral = () => {
@@ -205,9 +218,11 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={handleSaveDefaults} className="bg-[#E36A6A] hover:bg-[#C05A5A]">
-                Save Defaults
-              </Button>
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSaveDefaults} className="bg-[#E36A6A] hover:bg-[#C05A5A]">
+                  Save Defaults
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

@@ -19,7 +19,7 @@ export async function claimDailyCredit() {
   const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   
   // Check if user already claimed today
-  const { data: existingClaim, error: queryError } = await supabase
+  const { count, error: queryError } = await supabase
     .from('credit_transactions')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -30,7 +30,7 @@ export async function claimDailyCredit() {
     return { error: "Failed to check claim status" };
   }
 
-  if (existingClaim) {
+  if (count && count > 0) {
     return { error: "Already claimed today" };
   }
 

@@ -1,8 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
 
-// Create supabase client instance
-const supabase = await createClient();
-
 // Helper function to get start of today in UTC
 function getStartOfToday() {
   const now = new Date();
@@ -10,6 +7,8 @@ function getStartOfToday() {
 }
 
 export async function getUserStats(userId: string) {
+  const supabase = await createClient();
+
   // Get total generations count
   const { count: totalGenerations, error: countError } = await supabase
     .from('llm_logs')
@@ -80,6 +79,8 @@ export async function getUserStats(userId: string) {
 }
 
 export async function getRecentGenerations(userId: string, limit = 5) {
+  const supabase = await createClient();
+
   const { data, error } = await supabase
     .from('llm_logs')
     .select('id, created_at, property_context, status')

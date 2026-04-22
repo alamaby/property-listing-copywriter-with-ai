@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -30,11 +31,6 @@ export default async function RootLayout({
 
   return (
     <html lang={language} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{
-          __html: `(function(){try{var t=localStorage.getItem('color-theme');if(t)document.documentElement.setAttribute('data-color-theme',t);}catch(e){}})();`
-        }} />
-      </head>
       <body
         className={cn(
           "min-h-screen bg-background font-sans text-foreground antialiased",
@@ -42,6 +38,10 @@ export default async function RootLayout({
           fontHeading.variable
         )}
       >
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+        >{`(function(){try{var t=localStorage.getItem('color-theme');if(t)document.documentElement.setAttribute('data-color-theme',t);}catch(e){}})();`}</Script>
         {children}
         <Toaster />
       </body>

@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
+@theme {
   --color-background: #FFFBF1;
   --color-foreground: #2C2420;
   --font-sans: var(--font-sans);

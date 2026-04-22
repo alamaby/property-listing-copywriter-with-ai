@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { getProfileData } from "./actions";
+import { getProfileData, getCreditTransactions } from "./actions";
 import { updateProfile } from "@/app/actions/profile";
 
 export default function SettingsPage() {
@@ -22,6 +22,10 @@ export default function SettingsPage() {
     defaultSignature: "",
     defaultWritingStyle: ""
   });
+  const [tier, setTier] = useState("FREE");
+  const [userId, setUserId] = useState("");
+  const [creditTransactions, setCreditTransactions] = useState<any[]>([]);
+  const [billingLoading, setBillingLoading] = useState(false);
   
   useEffect(() => {
     const loadProfileData = async () => {
@@ -29,6 +33,8 @@ export default function SettingsPage() {
         const profileData = await getProfileData();
         if (profileData) {
           setFormData(profileData);
+          setTier(profileData.tier);
+          setUserId(profileData.id);
         } else {
           throw new Error("Failed to load profile data");
         }
@@ -42,6 +48,15 @@ export default function SettingsPage() {
     
     loadProfileData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "billing" && creditTransactions.length === 0) {
+      setBillingLoading(true);
+      getCreditTransactions()
+        .then(data => setCreditTransactions(data))
+        .finally(() => setBillingLoading(false));
+    }
+  }, [activeTab]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -66,7 +81,8 @@ export default function SettingsPage() {
   };
 
   const handleCopyReferral = () => {
-    navigator.clipboard.writeText("https://example.com/ref/12345");
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    navigator.clipboard.writeText(`${baseUrl}/register?ref=${userId}`);
     toast("Copied!", {
       description: "Referral link copied to clipboard.",
     });
@@ -236,83 +252,67 @@ export default function SettingsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Current Tier</h3>
                 <div className="bg-secondary p-4 rounded-lg">
-                  <p className="text-lg font-medium">FREE</p>
+                  <p className="text-lg font-medium">{tier}</p>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold mb-2">Referral Link</h3>
                 <div className="flex gap-2">
-                  <Input value="https://example.com/ref/12345" readOnly className="flex-1" />
+                  <Input
+                    value={userId ? `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/register?ref=${userId}` : ''}
+                    readOnly
+                    className="flex-1"
+                  />
                   <Button onClick={handleCopyReferral}>Copy</Button>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold mb-2">Credit Transactions</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-2">Date</th>
-                        <th className="text-left p-2">Type</th>
-                        <th className="text-left p-2">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-18</td>
-                        <td className="p-2 capitalize">purchase</td>
-                        <td className="p-2">+100</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-17</td>
-                        <td className="p-2 capitalize">claim</td>
-                        <td className="p-2">+10</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-16</td>
-                        <td className="p-2 capitalize">purchase</td>
-                        <td className="p-2">+50</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-15</td>
-                        <td className="p-2 capitalize">refund</td>
-                        <td className="p-2">-20</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-14</td>
-                        <td className="p-2 capitalize">claim</td>
-                        <td className="p-2">+10</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-13</td>
-                        <td className="p-2 capitalize">purchase</td>
-                        <td className="p-2">+75</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-12</td>
-                        <td className="p-2 capitalize">claim</td>
-                        <td className="p-2">+10</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-11</td>
-                        <td className="p-2 capitalize">purchase</td>
-                        <td className="p-2">+30</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-10</td>
-                        <td className="p-2 capitalize">claim</td>
-                        <td className="p-2">+10</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">2026-04-09</td>
-                        <td className="p-2 capitalize">purchase</td>
-                        <td className="p-2">+40</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                {billingLoading ? (
+                  <div className="text-center py-6 text-muted-foreground">Memuat transaksi...</div>
+                ) : creditTransactions.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">Belum ada transaksi kredit.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Date</th>
+                          <th className="text-left p-2">Type</th>
+                          <th className="text-left p-2">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {creditTransactions.map((tx) => {
+                          const typeLabels: Record<string, string> = {
+                            WELCOME_BONUS: "Welcome Bonus",
+                            DAILY_CLAIM: "Daily Bonus",
+                            REFERRAL_BONUS: "Referral Bonus",
+                            USAGE: "Penggunaan AI",
+                            EARN: "Kredit Ditambah",
+                            REFUND: "Refund",
+                            EXPIRED: "Kadaluarsa",
+                          };
+                          return (
+                            <tr key={tx.id} className="border-b">
+                              <td className="p-2">
+                                {new Date(tx.created_at).toLocaleDateString('id-ID', {
+                                  year: 'numeric', month: 'short', day: 'numeric'
+                                })}
+                              </td>
+                              <td className="p-2">{typeLabels[tx.transaction_type] ?? tx.transaction_type}</td>
+                              <td className={`p-2 font-medium ${tx.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {tx.amount >= 0 ? `+${tx.amount}` : tx.amount}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

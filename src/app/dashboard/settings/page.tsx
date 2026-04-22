@@ -9,6 +9,34 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { Check } from "lucide-react";
+
+const COLOR_THEMES = [
+  {
+    id: "terracotta",
+    name: "Terracotta",
+    description: "Warm & Classic",
+    swatches: ["#E36A6A", "#FFFBF1", "#FFF2D0", "#FFB2B2"],
+  },
+  {
+    id: "slate-indigo",
+    name: "Slate & Indigo",
+    description: "Modern SaaS",
+    swatches: ["#6366F1", "#FAFAFA", "#F1F5F9", "#E0E7FF"],
+  },
+  {
+    id: "forest-gold",
+    name: "Forest & Gold",
+    description: "Premium Luxury",
+    swatches: ["#1C4532", "#FFFEF7", "#F0F4F0", "#D4A017"],
+  },
+  {
+    id: "ocean-amber",
+    name: "Ocean & Amber",
+    description: "Fresh & Energetic",
+    swatches: ["#0EA5E9", "#F8FAFC", "#F0F9FF", "#F59E0B"],
+  },
+] as const;
 import { getProfileData, getCreditTransactions } from "./actions";
 import { updateProfile } from "@/app/actions/profile";
 
@@ -26,7 +54,13 @@ export default function SettingsPage() {
   const [userId, setUserId] = useState("");
   const [creditTransactions, setCreditTransactions] = useState<any[]>([]);
   const [billingLoading, setBillingLoading] = useState(false);
+  const [colorTheme, setColorTheme] = useState("terracotta");
   
+  useEffect(() => {
+    const saved = localStorage.getItem("color-theme");
+    if (saved) setColorTheme(saved);
+  }, []);
+
   useEffect(() => {
     const loadProfileData = async () => {
       try {
@@ -60,6 +94,16 @@ export default function SettingsPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSelectTheme = (themeId: string) => {
+    setColorTheme(themeId);
+    localStorage.setItem("color-theme", themeId);
+    if (themeId === "terracotta") {
+      document.documentElement.removeAttribute("data-color-theme");
+    } else {
+      document.documentElement.setAttribute("data-color-theme", themeId);
+    }
   };
 
   const handleSaveDefaults = async () => {
@@ -193,6 +237,42 @@ export default function SettingsPage() {
                     <SelectItem value="PST">PST (Los Angeles)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-3 pt-2">
+                <Label>Color Theme</Label>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {COLOR_THEMES.map((theme) => (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => handleSelectTheme(theme.id)}
+                      className={`relative flex flex-col gap-2 rounded-lg border-2 p-3 text-left transition-all hover:border-primary ${
+                        colorTheme === theme.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card"
+                      }`}
+                    >
+                      {colorTheme === theme.id && (
+                        <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
+                          <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                        </span>
+                      )}
+                      <div className="flex gap-1.5">
+                        {theme.swatches.map((color, i) => (
+                          <span
+                            key={i}
+                            className="h-5 w-5 rounded-full border border-black/10"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold leading-none">{theme.name}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{theme.description}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="flex justify-end pt-4">
                 <Button onClick={handleSaveProfile} className="bg-[#E36A6A] hover:bg-[#C05A5A]">

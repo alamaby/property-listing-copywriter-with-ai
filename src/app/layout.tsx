@@ -29,10 +29,15 @@ export default async function RootLayout({
   const language = profileData?.language || "en";
 
   return (
-    <html lang={language}>
+    <html lang={language} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){try{var t=localStorage.getItem('color-theme');if(t)document.documentElement.setAttribute('data-color-theme',t);}catch(e){}})();`
+        }} />
+      </head>
       <body
         className={cn(
-          "min-h-screen bg-[#FFFBF1] font-sans text-[#2C2420] antialiased",
+          "min-h-screen bg-background font-sans text-foreground antialiased",
           fontSans.variable,
           fontHeading.variable
         )}

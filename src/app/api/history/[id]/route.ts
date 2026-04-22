@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { id } = await params;
 
     // Fetch the specific listing from llm_logs table
@@ -21,12 +21,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return Response.json({ error: 'Listing not found' }, { status: 404 });
     }
 
-    // The response_payload.text contains a JSON string that needs to be parsed twice
-    // First parse gets us the string with escaped quotes, second parse gets the actual object
     try {
-      const firstParse = JSON.parse(data.response_payload.text);
-      const secondParse = JSON.parse(firstParse);
-      return Response.json(secondParse);
+      const parsed = JSON.parse(data.response_payload.text);
+      return Response.json(parsed);
     } catch (parseError) {
       console.error('Error parsing response payload:', parseError);
       return Response.json({ error: 'Invalid data format' }, { status: 500 });

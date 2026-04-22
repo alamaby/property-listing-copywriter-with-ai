@@ -53,11 +53,14 @@ export default function HistoryPage() {
 
       if (listingError) throw listingError;
       
-      const formattedListings = listings?.map(log => ({
-        id: log.id,
-        created_at: log.created_at,
-        headline: log.response_payload?.headline || 'Listing generated'
-      })) || [];
+      const formattedListings = listings?.map(log => {
+        let headline = 'Listing generated';
+        try {
+          const parsed = JSON.parse(log.response_payload?.text);
+          headline = parsed?.headline || headline;
+        } catch {}
+        return { id: log.id, created_at: log.created_at, headline };
+      }) || [];
       
       setListingHistory(formattedListings);
     } catch (err) {

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, ArrowLeft, Download, Share2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 function ResultContent() {
   const [data, setData] = useState({
@@ -13,17 +14,32 @@ function ResultContent() {
     description: '',
     features: [] as string[]
   });
+  const searchParams = useSearchParams();
+  const listingId = searchParams.get('id');
 
   useEffect(() => {
-    const storedData = sessionStorage.getItem('generatedListing');
-    if (storedData) {
-      try {
-        setData(JSON.parse(storedData));
-      } catch (e) {
-        console.error('Failed to parse result data', e);
+    // If there's an ID parameter, fetch from API
+    if (listingId) {
+      fetch(`/api/history/${listingId}`)
+        .then(res => res.json())
+        .then(data => {
+          setData(data);
+        })
+        .catch(err => {
+          console.error('Failed to fetch listing from API', err);
+        });
+    } else {
+      // Otherwise, use data from sessionStorage
+      const storedData = sessionStorage.getItem('generatedListing');
+      if (storedData) {
+        try {
+          setData(JSON.parse(storedData));
+        } catch (e) {
+          console.error('Failed to parse result data', e);
+        }
       }
     }
-  }, []);
+  }, [listingId]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

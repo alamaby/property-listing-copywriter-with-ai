@@ -171,15 +171,16 @@ export default function HistoryPage() {
               ) : (
                 <div className="space-y-4">
                   {listingHistory.map((listing) => (
-                    <div
-                      key={listing.id}
-                      className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="font-medium">{listing.headline}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatDate(listing.created_at)}
-                      </div>
-                    </div>
+                     <div
+                       key={listing.id}
+                       className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                       onClick={() => window.location.href = `/dashboard/result?id=${listing.id}`}
+                     >
+                       <div className="font-medium">{listing.headline}</div>
+                       <div className="text-sm text-muted-foreground">
+                         {formatDate(listing.created_at)}
+                       </div>
+                     </div>
                   ))}
                 </div>
               )}

@@ -47,7 +47,7 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-4xl">
           <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
             <Sparkles className="h-3.5 w-3.5" />
-            Didukung AI terkini — Claude &amp; Gemini
+            Didukung AI terkini — Gemma, GLM, MiniMax
           </span>
           <h1 className="mt-6 font-heading text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             Ubah Spek Properti Menjadi{' '}

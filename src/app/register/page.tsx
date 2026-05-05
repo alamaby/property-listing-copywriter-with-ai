@@ -1,46 +1,72 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { signUp } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button
+      type="submit"
+      className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:h-10"
+      disabled={pending}
+      aria-busy={pending}
+    >
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Creating account...
+        </>
+      ) : (
+        'Sign up'
+      )}
+    </Button>
+  );
+}
+
 export default function RegisterPage() {
-  const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const refParam = searchParams.get('ref');
   const [formStartTime] = useState(() => Math.floor(Date.now() / 1000));
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true);
     const result = await signUp(formData, refParam ?? undefined);
     if (result?.error) {
       toast.error(result.error);
-      setLoading(false);
     } else {
       toast.success('Check your email to confirm your account');
-      setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full px-4 sm:w-[400px]">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-4">
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to home
+      </Link>
+      <Card className="w-full sm:w-[400px]">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-heading font-bold">Register</CardTitle>
-           <CardDescription className="leading-relaxed">
-             Create an account to start generating property listings
-           </CardDescription>
-           {refParam && (
-             <p className="text-sm text-muted-foreground mt-2">
-               You were referred! You'll get bonus credits upon signup.
-             </p>
-           )}
+          <CardDescription className="leading-relaxed">
+            Create an account to start generating property listings
+          </CardDescription>
+          {refParam && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              You were referred! You&apos;ll get bonus credits upon signup.
+            </p>
+          )}
         </CardHeader>
         <form action={handleSubmit}>
           <CardContent className="space-y-4">
@@ -60,10 +86,8 @@ export default function RegisterPage() {
           <input type="hidden" name="form-start-time" value={formStartTime} />
           <input type="text" name="bot-field" className="hidden" autoComplete="off" />
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Sign up'}
-            </Button>
-            <div className="text-center text-sm text-gray-500">
+            <SubmitButton />
+            <div className="text-center text-sm text-muted-foreground">
               Already have an account?{' '}
               <Link href="/login" className="text-primary hover:underline">
                 Login

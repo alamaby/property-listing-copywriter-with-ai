@@ -1,11 +1,11 @@
 import { createClient } from '@/utils/supabase/server';
 import { creditService } from '@/services/creditService';
 import { redirect } from 'next/navigation';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Menu, LogOut, LayoutDashboard, History, Settings, Sparkles } from 'lucide-react';
-import { signOut } from '@/app/actions/auth';
+import { Menu, LayoutDashboard, History, Settings, Sparkles } from 'lucide-react';
+import { SignOutButton } from '@/components/SignOutButton';
 import Link from 'next/link';
 
 export default async function DashboardLayout({
@@ -29,39 +29,44 @@ export default async function DashboardLayout({
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
   ];
 
-  const SidebarContent = () => (
-    <div className="flex h-full flex-col gap-4">
-      <div className="flex-1 space-y-2 py-4">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900"
-          >
-            <link.icon className="h-5 w-5" />
-            {link.label}
-          </Link>
-        ))}
+  // `inSheet`: when true, links are wrapped in SheetClose so navigating closes the sheet.
+  // SheetClose only works inside a Sheet context, so the desktop sidebar passes inSheet={false}.
+  const SidebarContent = ({ inSheet = false }: { inSheet?: boolean }) => {
+    const linkClass = "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900";
+    return (
+      <div className="flex h-full flex-col gap-4">
+        <div className="flex-1 space-y-2 py-4">
+          {navLinks.map((link) => {
+            const linkEl = (
+              <Link href={link.href} className={linkClass}>
+                <link.icon className="h-5 w-5" />
+                {link.label}
+              </Link>
+            );
+            return inSheet ? (
+              <SheetClose key={link.href} asChild>
+                {linkEl}
+              </SheetClose>
+            ) : (
+              <div key={link.href}>{linkEl}</div>
+            );
+          })}
+        </div>
+        <div className="mt-auto border-t py-4">
+          <SignOutButton />
+        </div>
       </div>
-      <div className="mt-auto border-t py-4">
-        <form action={signOut}>
-          <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-red-500 hover:bg-red-50 hover:text-red-600">
-            <LogOut className="h-5 w-5" />
-            Sign Out
-          </Button>
-        </form>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <aside className="hidden w-64 border-r bg-card md:block">
+      {/* Desktop Sidebar — visible from lg+ so tablet portrait gets full width */}
+      <aside className="hidden w-64 border-r bg-card lg:block">
         <div className="flex h-16 items-center border-b px-6 font-heading font-semibold text-lg">
           AI Property Copy
         </div>
-        <div className="p-4 h-[calc(100vh-64px)]">
+        <div className="p-4 h-[calc(100dvh-64px)]">
           <SidebarContent />
         </div>
       </aside>
@@ -69,27 +74,27 @@ export default async function DashboardLayout({
       <div className="flex flex-1 flex-col">
         {/* Top Header */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
-          <div className="flex items-center gap-4">
-            {/* Mobile Nav Toggle */}
-            <div className="md:hidden">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Mobile + Tablet Nav Toggle */}
+            <div className="lg:hidden">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Open menu">
                     <Menu className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-64 p-4">
+                <SheetContent side="left" className="w-72 p-4 sm:w-64">
                   <div className="mb-8 font-heading font-semibold text-lg">AI Property Copy</div>
-                  <SidebarContent />
+                  <SidebarContent inSheet />
                 </SheetContent>
               </Sheet>
             </div>
-            <div className="hidden md:block font-medium">Welcome back</div>
+            <div className="hidden font-medium lg:block">Welcome back</div>
           </div>
 
           <div className="flex items-center gap-4">
             <Link href="/dashboard/history">
-              <Badge variant="secondary" className="px-3 py-1 text-sm font-medium cursor-pointer hover:bg-secondary/80">
+              <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium cursor-pointer hover:bg-secondary/80 whitespace-nowrap">
                 Credits: {credits}
               </Badge>
             </Link>
@@ -97,7 +102,7 @@ export default async function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
           {children}
         </main>
       </div>

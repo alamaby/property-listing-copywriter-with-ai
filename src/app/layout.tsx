@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -29,8 +28,17 @@ export default async function RootLayout({
   const profileData = await getProfileData();
   const language = profileData?.language || "en";
 
+  // Inline theme-init script: runs before paint, sets data-color-theme on <html>
+  // from localStorage (or 'slate-indigo' default). Kept as raw <script> with
+  // dangerouslySetInnerHTML because Next.js 16 + React 19 reject inline children
+  // on next/script's <Script> component.
+  const themeInitScript = `(function(){try{var t=localStorage.getItem('color-theme')||'slate-indigo';document.documentElement.setAttribute('data-color-theme',t);}catch(e){document.documentElement.setAttribute('data-color-theme','slate-indigo');}})();`;
+
   return (
     <html lang={language} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={cn(
           "min-h-screen bg-background font-sans text-foreground antialiased",
@@ -38,10 +46,6 @@ export default async function RootLayout({
           fontHeading.variable
         )}
       >
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-        >{`(function(){try{var t=localStorage.getItem('color-theme');if(t)document.documentElement.setAttribute('data-color-theme',t);}catch(e){}})();`}</Script>
         {children}
         <Toaster />
       </body>

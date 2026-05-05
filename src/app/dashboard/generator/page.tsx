@@ -93,15 +93,15 @@ export default function GeneratorPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 bg-background p-8">
+    <div className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-heading font-bold tracking-tight">AI Listing Generator</h1>
-        <p className="text-muted-foreground leading-relaxed">
+        <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">AI Listing Generator</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed sm:text-base">
           Fill in the details below to generate a professional property listing.
         </p>
       </div>
 
-      <div className="grid gap-8">
+      <div className="grid gap-6 sm:gap-8">
         <Card>
           <CardHeader>
             <CardTitle>Property Details</CardTitle>
@@ -109,7 +109,8 @@ export default function GeneratorPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2">
+              {/* Selects: 1 col on mobile, 2 cols from sm */}
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="propertyType">Property Type</Label>
                   <Select
@@ -142,13 +143,17 @@ export default function GeneratorPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
+              {/* Short numeric fields: 2 cols on mobile, 4 cols from lg (when sidebar takes width back) */}
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
                 <div className="space-y-2">
                   <Label htmlFor="landArea">Land Area (sqm)</Label>
                   <Input
                     id="landArea"
                     name="landArea"
                     type="number"
+                    inputMode="numeric"
                     placeholder="e.g. 200"
                     value={formData.landArea}
                     onChange={handleInputChange}
@@ -162,6 +167,7 @@ export default function GeneratorPage() {
                     id="buildingArea"
                     name="buildingArea"
                     type="number"
+                    inputMode="numeric"
                     placeholder="e.g. 150"
                     value={formData.buildingArea}
                     onChange={handleInputChange}
@@ -175,6 +181,7 @@ export default function GeneratorPage() {
                     id="bedrooms"
                     name="bedrooms"
                     type="number"
+                    inputMode="numeric"
                     placeholder="e.g. 3"
                     value={formData.bedrooms}
                     onChange={handleInputChange}
@@ -188,6 +195,7 @@ export default function GeneratorPage() {
                     id="bathrooms"
                     name="bathrooms"
                     type="number"
+                    inputMode="numeric"
                     placeholder="e.g. 2"
                     value={formData.bathrooms}
                     onChange={handleInputChange}
@@ -226,7 +234,7 @@ export default function GeneratorPage() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>
+              <Button type="submit" className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:h-10" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

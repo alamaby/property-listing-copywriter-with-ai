@@ -86,10 +86,10 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-heading font-bold tracking-tight">Riwayat & Kredit</h1>
-        <p className="text-muted-foreground">
+        <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Riwayat & Kredit</h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
           Lihat riwayat penggunaan kredit dan listing properti yang telah dihasilkan.
         </p>
       </div>
@@ -133,9 +133,9 @@ export default function HistoryPage() {
                   {creditTransactions.map((transaction) => (
                     <div
                       key={transaction.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="flex flex-col gap-1 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                     >
-                      <div>
+                      <div className="min-w-0">
                         <div className="font-medium">
                           {transaction.transaction_type === 'PURCHASE' ? 'Pembelian Kredit' : 'Penggunaan AI'}
                         </div>
@@ -143,7 +143,7 @@ export default function HistoryPage() {
                           {formatDate(transaction.created_at)}
                         </div>
                       </div>
-                      <div className={`font-semibold ${
+                      <div className={`font-semibold whitespace-nowrap ${
                         transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
                         {formatCurrency(transaction.amount)} Kredit
@@ -174,16 +174,16 @@ export default function HistoryPage() {
               ) : (
                 <div className="space-y-4">
                   {listingHistory.map((listing) => (
-                     <div
-                       key={listing.id}
-                       className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                       onClick={() => window.location.href = `/dashboard/result?id=${listing.id}`}
-                     >
-                       <div className="font-medium">{listing.headline}</div>
-                       <div className="text-sm text-muted-foreground">
-                         {formatDate(listing.created_at)}
-                       </div>
-                     </div>
+                    <Link
+                      key={listing.id}
+                      href={`/dashboard/result?id=${listing.id}`}
+                      className="block rounded-lg border p-4 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <div className="font-medium break-words">{listing.headline}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDate(listing.created_at)}
+                      </div>
+                    </Link>
                   ))}
                 </div>
               )}

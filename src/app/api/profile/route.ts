@@ -23,29 +23,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the user's profile in the database
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .update({
         full_name: name,
         timezone,
-        language
+        language,
       })
-      .eq('id', user.id);
-      
+      .eq('id', user.id)
+      .select()
+      .single();
+
     if (error) {
+      console.error('[api/profile] supabase update error:', JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { success: false, error: 'Failed to update profile' },
+        { success: false, error: error.message, code: error.code, details: error.details },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ 
-      success: true 
-    });
+    return NextResponse.json({ success: true, profile: data });
   } catch (error) {
-    console.error('Error updating profile:', error);
+    console.error('[api/profile] unhandled error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update profile' },
+      { success: false, error: error instanceof Error ? error.message : 'Failed to update profile' },
       { status: 500 }
     );
   }

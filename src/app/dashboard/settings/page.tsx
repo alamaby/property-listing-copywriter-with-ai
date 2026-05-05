@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Check, Loader2 } from "lucide-react";
 
 const COLOR_THEMES = [
   {
@@ -41,8 +42,10 @@ import { getProfileData, getCreditTransactions } from "./actions";
 import { updateProfile } from "@/app/actions/profile";
 
 export default function SettingsPage() {
-  // toast is imported directly from sonner
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("profile");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingDefaults, setSavingDefaults] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     language: "",
@@ -54,8 +57,8 @@ export default function SettingsPage() {
   const [userId, setUserId] = useState("");
   const [creditTransactions, setCreditTransactions] = useState<any[]>([]);
   const [billingLoading, setBillingLoading] = useState(false);
-  const [colorTheme, setColorTheme] = useState("terracotta");
-  
+  const [colorTheme, setColorTheme] = useState("slate-indigo");
+
   useEffect(() => {
     const saved = localStorage.getItem("color-theme");
     if (saved) setColorTheme(saved);
@@ -99,28 +102,29 @@ export default function SettingsPage() {
   const handleSelectTheme = (themeId: string) => {
     setColorTheme(themeId);
     localStorage.setItem("color-theme", themeId);
-    if (themeId === "terracotta") {
-      document.documentElement.removeAttribute("data-color-theme");
-    } else {
-      document.documentElement.setAttribute("data-color-theme", themeId);
-    }
+    // Always set the attribute. For "terracotta" no matching CSS block exists
+    // so the cascade falls back to :root (which still defines terracotta).
+    document.documentElement.setAttribute("data-color-theme", themeId);
   };
 
   const handleSaveDefaults = async () => {
+    if (savingDefaults) return;
+    setSavingDefaults(true);
     try {
       const result = await updateProfile({
         defaultSignature: formData.defaultSignature,
         defaultWritingStyle: formData.defaultWritingStyle,
       });
       if (result.error) throw new Error(result.error);
-      toast("Defaults Saved", {
+      toast.success("Defaults saved", {
         description: "Your default signature and writing style have been saved.",
       });
     } catch (error) {
-      toast("Error", {
-        description: error instanceof Error ? error.message : "Failed to save defaults",
-        className: "bg-destructive text-destructive-foreground",
+      toast.error("Failed to save defaults", {
+        description: error instanceof Error ? error.message : "Please try again.",
       });
+    } finally {
+      setSavingDefaults(false);
     }
   };
 
@@ -146,6 +150,8 @@ export default function SettingsPage() {
   };
 
   const handleSaveProfile = async () => {
+    if (savingProfile) return;
+    setSavingProfile(true);
     try {
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -162,19 +168,20 @@ export default function SettingsPage() {
       const result = await response.json();
 
       if (result.success) {
-        toast("Profile Updated", {
+        toast.success("Profile updated", {
           description: "Your profile information has been saved.",
         });
-        // Refresh the page to get updated data
-        window.location.reload();
+        // Soft refresh — re-runs server components without losing client state.
+        router.refresh();
       } else {
         throw new Error(result.error || "Failed to update profile");
       }
     } catch (error) {
-      toast("Error", {
-        description: error instanceof Error ? error.message : "Failed to update profile",
-        className: "bg-destructive text-destructive-foreground",
+      toast.error("Failed to update profile", {
+        description: error instanceof Error ? error.message : "Please try again.",
       });
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -275,8 +282,20 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex justify-end pt-4">
-                <Button onClick={handleSaveProfile} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Save Profile
+                <Button
+                  onClick={handleSaveProfile}
+                  disabled={savingProfile}
+                  aria-busy={savingProfile}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {savingProfile ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Profile"
+                  )}
                 </Button>
               </div>
             </CardContent>
@@ -315,8 +334,20 @@ export default function SettingsPage() {
                 </Select>
               </div>
               <div className="flex justify-end pt-4">
-                <Button onClick={handleSaveDefaults} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Save Defaults
+                <Button
+                  onClick={handleSaveDefaults}
+                  disabled={savingDefaults}
+                  aria-busy={savingDefaults}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {savingDefaults ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Defaults"
+                  )}
                 </Button>
               </div>
             </CardContent>

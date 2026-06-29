@@ -75,7 +75,7 @@ export async function signUp(formData: FormData, referredBy?: string) {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  return { success: true };
 }
 
 export async function signOut() {

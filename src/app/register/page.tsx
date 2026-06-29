@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useFormStatus } from 'react-dom';
 import { signUp } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -33,8 +33,9 @@ function SubmitButton() {
   );
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const refParam = searchParams.get('ref');
   const [formStartTime] = useState(() => Math.floor(Date.now() / 1000));
 
@@ -42,11 +43,60 @@ export default function RegisterPage() {
     const result = await signUp(formData, refParam ?? undefined);
     if (result?.error) {
       toast.error(result.error);
-    } else {
+    } else if (result?.success) {
       toast.success('Check your email to confirm your account');
+      // Optional: redirect to login after a short delay so user sees the toast
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
     }
   }
 
+  return (
+    <Card className="w-full sm:w-[400px]">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-heading font-bold">Register</CardTitle>
+        <CardDescription className="leading-relaxed">
+          Create an account to start generating property listings
+        </CardDescription>
+        {refParam && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            You were referred! You&apos;ll get bonus credits upon signup.
+          </p>
+        )}
+      </CardHeader>
+      <form action={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input id="fullName" name="fullName" placeholder="John Doe" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" name="password" type="password" required />
+          </div>
+        </CardContent>
+        <input type="hidden" name="form-start-time" value={formStartTime} />
+        <input type="text" name="bot-field" className="hidden" autoComplete="off" />
+        <CardFooter className="flex flex-col space-y-4">
+          <SubmitButton />
+          <div className="text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/login" className="text-primary hover:underline">
+              Login
+            </Link>
+          </div>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+export default function RegisterPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-4">
       <Link
@@ -56,46 +106,9 @@ export default function RegisterPage() {
         <ArrowLeft className="h-4 w-4" />
         Back to home
       </Link>
-      <Card className="w-full sm:w-[400px]">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-heading font-bold">Register</CardTitle>
-          <CardDescription className="leading-relaxed">
-            Create an account to start generating property listings
-          </CardDescription>
-          {refParam && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              You were referred! You&apos;ll get bonus credits upon signup.
-            </p>
-          )}
-        </CardHeader>
-        <form action={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input id="fullName" name="fullName" placeholder="John Doe" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
-            </div>
-          </CardContent>
-          <input type="hidden" name="form-start-time" value={formStartTime} />
-          <input type="text" name="bot-field" className="hidden" autoComplete="off" />
-          <CardFooter className="flex flex-col space-y-4">
-            <SubmitButton />
-            <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
-              <Link href="/login" className="text-primary hover:underline">
-                Login
-              </Link>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+      <Suspense fallback={<Card className="w-full sm:w-[400px]"><CardContent className="p-6"><div className="text-center">Loading...</div></CardContent></Card>}>
+        <RegisterForm />
+      </Suspense>
     </div>
   );
 }

@@ -2,14 +2,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/utils/supabase/middleware';
 import { createClient } from '@/utils/supabase/server';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Update session
   const response = await updateSession(request);
-  
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
                      request.nextUrl.pathname.startsWith('/register');
   const isDashboardPage = request.nextUrl.pathname.startsWith('/dashboard');
 

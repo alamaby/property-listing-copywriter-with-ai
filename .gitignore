@@ -55,3 +55,7 @@ Thumbs.db
 
 # Supabase
 supabase/.temp/
+
+# Agent tooling / local
+.claude/
+.kimchi/

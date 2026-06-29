@@ -1,0 +1,22 @@
+# Normalize line endings to LF for all text files
+# (Windows users get CRLF on checkout via core.autocrlf=true,
+#  but the repo stores LF as the canonical form)
+
+*               text=auto eol=lf
+
+# Explicitly mark binary files
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.webp          binary
+*.ico           binary
+*.pdf           binary
+*.zip           binary
+*.woff          binary
+*.woff2         binary
+
+# Windows batch / shell scripts may need CRLF
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
